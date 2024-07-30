@@ -14,7 +14,6 @@ jobs:
         uses: googleapis/release-please-action@v4
         with:
           release-type: simple
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
       - name: Checkout repository
         if: ${{ steps.release.outputs.release_created }}
@@ -23,6 +22,9 @@ jobs:
       - name: Create tag major version
         if: ${{ steps.release.outputs.release_created }}
         run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/googleapis/release-please-action.git"
           git tag -d v${{ steps.release.outputs.major }} || true
           git push origin :v${{ steps.release.outputs.major }} || true
           git tag -a v${{ steps.release.outputs.major }} -m "Release v${{ steps.release.outputs.major }}"
