@@ -9,16 +9,15 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Release please
         id: release
         uses: googleapis/release-please-action@v4
         with:
           release-type: simple
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-
-      - name: Setup jq
-        if: steps.release.outputs.release_created == 'true'
-        run: sudo apt-get install -y jq
 
       - name: Create major tag
         if: steps.release.outputs.release_created == 'true'
