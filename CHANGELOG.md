@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/kitabisa/cloudflare-pages-action/compare/v1.0.4...v1.0.5) (2024-07-30)
+
+
+### Bug Fixes
+
+* release with also generate major version ([d27ccfc](https://github.com/kitabisa/cloudflare-pages-action/commit/d27ccfc582854aa0719d05c13f8870394d455cce))
+
 ## [1.0.4](https://github.com/kitabisa/cloudflare-pages-action/compare/v1.0.3...v1.0.4) (2024-07-30)
 
 
