@@ -1,0 +1,178 @@
+name: Cloudflare Pages Action
+description: Deploy your project to Cloudflare Pages with automatic project creation and custom domain
+author: Ade Hery Shopyan
+
+branding: 
+  icon: 'upload-cloud'
+  color: 'blue'
+
+inputs:
+  api-token:
+    required: true
+    description: "Set api token"
+    type: string
+
+  account-id:
+    required: true
+    description: "Set account id"
+    type: string
+
+  branch:
+    required: true
+    description: "Set branch"
+    type: string
+
+  production-branch:
+    required: true
+    description: "Set production branch"
+    type: string
+
+  build-directory:
+    required: true
+    description: "Set build directory"
+    type: string
+
+  package-manager:
+    required: true
+    description: "Set package manager"
+    type: string
+
+  project-name:
+    required: true
+    description: "Set project name"
+    type: string
+
+  zone-name:
+    required: false
+    description: "Set zone name"
+    default: ""
+    type: string
+
+  custom-domain:
+    required: false
+    description: "Set custom domain"
+    default: ""
+    type: string
+
+  working-directory:
+    required: false
+    description: "Set working directory"
+    default: "."
+    type: string
+
+outputs:
+  deployment-url:
+    description: "Define deployment url"
+    value: ${{ steps.url.outputs.deployment-url }}
+
+  pages-url:
+    description: "Define pages url"
+    value: ${{ steps.url.outputs.pages-url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Deploy
+      id: deploy
+      uses: cloudflare/wrangler-action@v3
+      with:
+        workingDirectory: ${{ inputs.working-directory }}
+        apiToken: ${{ inputs.api-token }}
+        accountId: ${{ inputs.account-id }}
+        preCommands: wrangler pages project create ${{ inputs.project-name }} --production-branch=${{ inputs.production-branch }} || true
+        command: pages deploy ${{ inputs.build-directory }} --project-name=${{ inputs.project-name }} --branch=${{ inputs.branch }} --commit-dirty=true
+        packageManager: ${{ inputs.package-manager }}
+
+    - name: Get Cloudflare Zone ID
+      id: get-zone-id
+      if: "${{ inputs.zone-name != '' }}"
+      shell: bash
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.api-token }}
+        ZONE_DOMAIN: ${{ inputs.zone-name }}
+      run: |
+        response=$(curl -X GET "https://api.cloudflare.com/client/v4/zones?name=$ZONE_DOMAIN" \
+          -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+          -H "Content-Type: application/json")
+        zone_id=$(echo $response | jq -r '.result[0].id')
+        echo "id=$zone_id" >> $GITHUB_OUTPUT
+
+    - name: Set Cloudflare DNS Record & Custom Domain
+      id: dnsrecord
+      if: "${{ steps.get-zone-id.outputs.id != 'null' && inputs.zone-name != '' && inputs.custom-domain != '' }}"
+      shell: bash
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.api-token }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ inputs.account-id }}
+        CLOUDFLARE_ZONE_ID: ${{ steps.get-zone-id.outputs.id }}
+        PROJECT_NAME: ${{ inputs.project-name }}
+        CUSTOM_DOMAIN: ${{ inputs.custom-domain }}
+      run: |
+        echo "Check DNS record exist or not for the domain: ${CUSTOM_DOMAIN}"
+        res_record=$(curl -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/dns_records?type=CNAME&name=$CUSTOM_DOMAIN" \
+          -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+          -H "Content-Type: application/json")
+        dns_record_id=$(echo $res_record | jq -r '.result[0].id')
+
+        if [ "$dns_record_id" == "null" ] || [ -z "$dns_record_id" ]; then
+          echo "DNS record not found for the domain: ${CUSTOM_DOMAIN}"
+          response=$(curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/dns_records" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{
+              "type": "CNAME",
+              "name": "'"$CUSTOM_DOMAIN"'",
+              "content": "'"$PROJECT_NAME"'.pages.dev",
+              "ttl": 1,
+              "proxied": true
+            }')
+          id=$(echo $response | jq -r '.result.id')
+          echo "id=$id" >> $GITHUB_OUTPUT
+
+          echo "Set Cloudflare Pages Custom Domain for: ${CUSTOM_DOMAIN}"
+          curl -X POST "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT_NAME/domains" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"name": "'$CUSTOM_DOMAIN'"}'
+        else
+          echo "DNS record found for the domain: ${CUSTOM_DOMAIN}"
+          echo "id=$dns_record_id" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Update Cloudflare DNS Record
+      if: "${{ steps.get-zone-id.outputs.id != 'null' && inputs.zone-name != '' && inputs.custom-domain != '' && inputs.branch != inputs.production-branch }}"
+      shell: bash
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.api-token }}
+        CLOUDFLARE_ZONE_ID: ${{ steps.get-zone-id.outputs.id }}
+        CUSTOM_DOMAIN: ${{ inputs.custom-domain }}
+        DNS_RECORD_ID: ${{ steps.dnsrecord.outputs.id }}
+        PAGES_URL: ${{ steps.deploy.outputs.deployment-url }}
+      run: |
+        DNS_RECORD_CONTENT=$(echo "$PAGES_URL" | sed 's/^https:\/\///')
+        curl -X PATCH "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/dns_records/$DNS_RECORD_ID" \
+          -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+          -H "Content-Type: application/json" \
+          --data '{
+            "type": "CNAME",
+            "name": "'"$CUSTOM_DOMAIN"'",
+            "content": "'"$DNS_RECORD_CONTENT"'",
+            "id": "'"$DNS_RECORD_ID"'",
+            "ttl": 1,
+            "proxied": true
+          }'
+
+    - name: Get deployment url
+      id: url
+      shell: bash
+      env:
+        DEPLOYMENT_URL: ${{ inputs.custom-domain }}
+        PAGES_URL: ${{ steps.deploy.outputs.deployment-url }}
+      run: |
+        if [ "$DEPLOYMENT_URL" != "" ]; then
+          echo "deployment-url=https://$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "pages-url=$PAGES_URL" >> $GITHUB_OUTPUT
+        else
+          echo "deployment-url=$PAGES_URL" >> $GITHUB_OUTPUT
+          echo "pages-url=$PAGES_URL" >> $GITHUB_OUTPUT
+        fi

@@ -1,0 +1,16 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release please
+        uses: googleapis/release-please-action@v4
+        with:
+          release-type: simple
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
