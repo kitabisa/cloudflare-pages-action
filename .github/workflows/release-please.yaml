@@ -10,7 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Release please
+        id: release
         uses: googleapis/release-please-action@v4
         with:
           release-type: simple
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Create major tag
+        if: steps.release.outputs.release_created == 'true'
+        run: |
+          LATEST_VERSION=$(jq -r '.tag_name' < "${{ steps.release.outputs.release_notes_path }}")
+          MAJOR_VERSION=$(echo $LATEST_VERSION | cut -d. -f1)
+          git tag -f v$MAJOR_VERSION
+          git push origin --tags
