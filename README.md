@@ -2,6 +2,16 @@
 
 Deploy your project to Cloudflare Pages with automatic project creation and custom domain
 
+## API Token Permissions
+
+  * Account Resources:
+    * Resource: Include -> All Accounts (or spesific account)
+    * Permissions: Pages -> Edit
+
+  * Zone Resources (if using custom domain):
+    * Resource: Include -> All Zones (or spesific zone)
+    * Permissions: Zone -> Read, DNS -> Edit
+
 ## Usage
 
 ### Deploy preview
