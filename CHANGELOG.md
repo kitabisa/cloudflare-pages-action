@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/kitabisa/cloudflare-pages-action/compare/v1.0.5...v1.0.6) (2024-10-24)
+
+
+### Bug Fixes
+
+* issue with latest wrangler action version ([#9](https://github.com/kitabisa/cloudflare-pages-action/issues/9)) ([06f59fb](https://github.com/kitabisa/cloudflare-pages-action/commit/06f59fb67201a8d9490fd6f7867766c1aaee7a9b))
+
 ## [1.0.5](https://github.com/kitabisa/cloudflare-pages-action/compare/v1.0.4...v1.0.5) (2024-07-30)
 
 
