@@ -76,7 +76,7 @@ runs:
       id: deploy
       # use specific wrangler-action version to handle this issue
       # https://github.com/cloudflare/wrangler-action/issues/306
-      uses: cloudflare/wrangler-action@v3.9.0
+      uses: cloudflare/wrangler-action@v3.10.0
       with:
         workingDirectory: ${{ inputs.working-directory }}
         apiToken: ${{ inputs.api-token }}
