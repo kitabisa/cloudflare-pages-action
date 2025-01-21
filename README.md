@@ -1,6 +1,6 @@
 # Cloudflare Pages Action
 
-Deploy your project to Cloudflare Pages with automatic project creation and custom domain
+Deploy your project to Cloudflare Pages with automatic project creation and setup custom domain (with support multiple domain)
 
 ## API Token Permissions
 
@@ -8,7 +8,7 @@ Deploy your project to Cloudflare Pages with automatic project creation and cust
     * Resource: Include -> All Accounts (or spesific account)
     * Permissions: Pages -> Edit
 
-  * Zone Resources (if using custom domain):
+  * Zone Resources (if using custom domains):
     * Resource: Include -> All Zones (or spesific zone)
     * Permissions: Zone -> Read, DNS -> Edit
 
@@ -34,7 +34,7 @@ jobs:
         run: pnpm build
 
       - name: Deploy
-        uses: kitabisa/cloudflare-pages-action@v1
+        uses: kitabisa/cloudflare-pages-action@v2
         with:
           api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           account-id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -43,8 +43,7 @@ jobs:
           package-manager: pnpm
           build-directory: ./out
           project-name: your-cloudflare-project
-          zone-name: example.com
-          custom-domain: dev-${{ github.event.pull_request.number }}.example.com
+          custom-domains: dev-${{ github.event.pull_request.number }}.example.com
           working-directory: ./
 ```
 
@@ -68,7 +67,7 @@ jobs:
         run: pnpm build
 
       - name: Deploy
-        uses: kitabisa/cloudflare-pages-action@v1
+        uses: kitabisa/cloudflare-pages-action@v2
         with:
           api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           account-id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -77,8 +76,7 @@ jobs:
           package-manager: pnpm
           build-directory: ./out
           project-name: your-cloudflare-project
-          zone-name: example.com
-          custom-domain: prod.example.com
+          custom-domains: example.com,example.co.id,example.id
           working-directory: ./
 ```
 
@@ -93,13 +91,12 @@ jobs:
 | `package-manager`     | Setup package manager.            | `undefined`   | `npm`, `yarn`, `pnpm`, `bun`          |
 | `build-directory`     | Define output build directory.    | `undefined`   | `./out`                               |
 | `project-name`        | Setup project name.               | `undefined`   | `kitabisa-accounts`                   |
-| `zone-name`           | Define Cloudflare zone name.      | `""`          | `kitabisa.com`                        |
-| `custom-domain`       | Setup custom domain.              | `""`          | `accounts.kitabisa.com`               |
+| `custom-domains`      | Setup custom domains.             | `""`          | `accounts.kitabisa.com`               |
 | `working-directory`   | Setup working directory.          | `"."`         | `./apps/accounts`                     |
 
 ## Outputs
 
 | Name              | Description                                               | Example                       |
 | ----------------- | --------------------------------------------------------- | ----------------------------- |
-| `deployment-url`  | The output deployment url from custom domain (if set).    | `accounts.kitabisa.com`       |
+| `deployment-url`  | The output deployment url from custom domains (if set).   | `accounts.kitabisa.com`       |
 | `pages-url`       | The output deployment url from cloudflare pages.          | `kitabisa-accounts.pages.dev` |

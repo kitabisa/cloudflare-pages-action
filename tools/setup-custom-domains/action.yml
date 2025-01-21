@@ -1,0 +1,134 @@
+name: Setup Custom Domains
+description: Setup Custom Domains
+
+inputs:
+  api-token:
+    required: true
+    description: "Set api token"
+    type: string
+
+  account-id:
+    required: true
+    description: "Set account id"
+    type: string
+
+  branch:
+    required: true
+    description: "Set branch"
+    type: string
+
+  production-branch:
+    required: true
+    description: "Set production branch"
+    type: string
+
+  project-name:
+    required: true
+    description: "Set project name"
+    type: string
+
+  custom-domains:
+    required: true
+    description: "Set custom domains"
+    type: string
+
+  deployment-url:
+    required: true
+    description: "Set deployment url"
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Custom Domains
+      shell: bash
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.api-token }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ inputs.account-id }}
+        PROJECT_NAME: ${{ inputs.project-name }}
+        DEPLOYMENT_URL: ${{ inputs.deployment-url }}
+        BRANCH: ${{ inputs.branch }}
+        PRODUCTION_BRANCH: ${{ inputs.production-branch }}
+      run: |
+        custom_domains=$(echo '${{ inputs.custom-domains }}' | tr -s ' ' ',')
+        if [ -n "$custom_domains" ]; then
+          curl -s https://publicsuffix.org/list/public_suffix_list.dat -o public_suffix_list.dat
+          for domain in $(echo "$custom_domains" | tr ',' '\n'); do
+            echo "======================================="
+            echo "Setup custom domain for $domain"
+            echo "======================================="
+            tld=""
+            parts=($(echo "$domain" | tr '.' ' '))
+            num_parts=${#parts[@]}
+            for ((i=$num_parts-1; i>=1; i--)); do
+              suffix=$(echo "${parts[@]:$i}" | tr ' ' '.')
+              if grep -Fxq "$suffix" public_suffix_list.dat; then
+                tld=$(echo "${parts[@]:$i}" | tr ' ' '.')
+              fi
+            done
+            tld_parts=($(echo "$tld" | tr '.' ' '))
+            tld_num_parts=${#tld_parts[@]}
+            topdomain=$(echo "${parts[$i-$tld_num_parts-1]}.${tld}")
+
+            if [ -n "$topdomain" ]; then
+              echo "======================================="
+              echo "Get Zone ID from $topdomain"
+              echo "======================================="
+              response=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=${topdomain}" \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                -H "Content-Type: application/json")
+              zone_id=$(echo $response | jq -r '.result[0].id')
+              
+              if [ -n "$zone_id" ]; then
+                res_record=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records?type=CNAME&name=${domain}" \
+                  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                  -H "Content-Type: application/json")
+                dns_record_id=$(echo $res_record | jq -r '.result[0].id')
+
+                if [ "$dns_record_id" == "null" ] || [ -z "$dns_record_id" ]; then
+                  echo "======================================="
+                  echo "Setup DNS Record for $domain"
+                  echo "======================================="
+                  response=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records" \
+                    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    --data '{
+                      "type": "CNAME",
+                      "name": "'"${domain}"'",
+                      "content": "'"$PROJECT_NAME"'.pages.dev",
+                      "ttl": 1,
+                      "proxied": true
+                    }')
+                  dns_record_id=$(echo $response | jq -r '.result.id')
+
+                  echo "=================================================="
+                  echo "Setup Custom Domain $domain for $PROJECT_NAME"
+                  echo "=================================================="
+                  curl -s -X POST "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT_NAME/domains" \
+                    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    --data '{"name": "'${domain}'"}'
+                fi
+
+                if [ "$BRANCH" != "$PRODUCTION_BRANCH" ]; then
+                  echo "=================================================="
+                  echo "Update Deployment on $domain"
+                  echo "=================================================="
+                  deployment_url=$(echo "$DEPLOYMENT_URL" | sed 's/^https:\/\///')
+                  curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records/${dns_record_id}" \
+                    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    --data '{
+                      "type": "CNAME",
+                      "name": "'"${domain}"'",
+                      "content": "'"${deployment_url}"'",
+                      "id": "'"${dns_record_id}"'",
+                      "ttl": 1,
+                      "proxied": true
+                    }'
+                fi
+              fi
+            fi
+          done
+          rm public_suffix_list.dat
+        fi
