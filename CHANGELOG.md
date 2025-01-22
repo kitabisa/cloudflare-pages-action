@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/kitabisa/cloudflare-pages-action/compare/v1.0.7...v2.0.0) (2025-01-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* support for setup multiple custom domains ([#15](https://github.com/kitabisa/cloudflare-pages-action/issues/15))
+
+### Features
+
+* support for setup multiple custom domains ([#15](https://github.com/kitabisa/cloudflare-pages-action/issues/15)) ([1fba971](https://github.com/kitabisa/cloudflare-pages-action/commit/1fba9713280288f0fd1bd68dcd7f3afe4c87957f))
+
 ## [1.0.7](https://github.com/kitabisa/cloudflare-pages-action/compare/v1.0.6...v1.0.7) (2024-10-24)
 
 
