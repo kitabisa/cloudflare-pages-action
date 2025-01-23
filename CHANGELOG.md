@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.1...v2.0.2) (2025-01-23)
+
+
+### Bug Fixes
+
+* readable actions log ([3e5284f](https://github.com/kitabisa/cloudflare-pages-action/commit/3e5284f800736c37c8e6b1c93ad37106cec82580))
+
 ## [2.0.1](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.0...v2.0.1) (2025-01-23)
 
 
