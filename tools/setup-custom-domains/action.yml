@@ -57,7 +57,7 @@ runs:
             echo "=============================================================================="
             echo "Setup custom domain for $domain"
             echo "=============================================================================="
-            echo "Get main domain ..."
+            echo "Get top domain..."
             tld=""
             parts=($(echo "$domain" | tr '.' ' '))
             num_parts=${#parts[@]}
@@ -72,26 +72,26 @@ runs:
             topdomain=$(echo "${parts[$i-$tld_num_parts-1]}.${tld}")
 
             if [ -n "$topdomain" ]; then
-              echo "Main domain is $topdomain"
-              echo "Get cloudflare zone for $topdomain ..."
+              echo "Top domain is $topdomain"
+              echo "Get zone for top domain $topdomain..."
               getzone=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=${topdomain}" \
                 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
                 -H "Content-Type: application/json")
               zone_id=$(echo $getzone | jq -r '.result[0].id')
               
-              if [ -n "$zone_id" ]; then
-                echo "Cloudflare zone is found"
-                echo "Get cloudflare dns record for $domain ..."
+              if [ -n "$zone_id" ] && [ "$zone_id" != "null" ]; then
+                echo "Zone is found, zone id $zone_id"
+                echo "Get dns record for $domain..."
                 getdns=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records?type=CNAME&name=${domain}" \
                   -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
                   -H "Content-Type: application/json")
                 dns_record_id=$(echo $getdns | jq -r '.result[0].id')
 
                 if [ -n "$dns_record_id" ] && [ "$dns_record_id" != "null" ]; then
-                  echo "Cloudflare dns record for $domain already exists"
+                  echo "DNS record is found, dns record id $dns_record_id"
                 else
-                  echo "Cloudflare dns record for $domain is not found"
-                  echo "Setup dns record for $domain ..."
+                  echo "DNS record is not found"
+                  echo "Create dns record for $domain..."
                   postdns=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records" \
                     -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
                     -H "Content-Type: application/json" \
@@ -104,9 +104,9 @@ runs:
                     }')
                   dns_record_id=$(echo $postdns | jq -r '.result.id')
 
-                  if [ -n "$dns_record_id" ]; then
-                    echo "Cloudflare dns record is created"
-                    echo "Setup custom domain for $PROJECT_NAME ..."
+                  if [ -n "$dns_record_id" ] && [ "$dns_record_id" != "null" ]; then
+                    echo "DNS record is created, dns record id $dns_record_id"
+                    echo "Create custom domain $domain for $PROJECT_NAME project..."
                     postcustomdomain=$(curl -s -X POST "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT_NAME/domains" \
                       -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
                       -H "Content-Type: application/json" \
@@ -114,13 +114,13 @@ runs:
                     custom_domain_id=$(echo $postcustomdomain | jq -r '.result.id')
 
                     if [ -n "$custom_domain_id" ]; then
-                      echo "Custom domain for $PROJECT_NAME is created"
+                      echo "Custom domain $domain is created
                     fi
                   fi
                 fi
 
                 if [ "$BRANCH" != "$PRODUCTION_BRANCH" ]; then
-                  echo "Update dns record for $domain ..."
+                  echo "Update dns record for $domain..."
                   deployment_url=$(echo "$DEPLOYMENT_URL" | sed 's/^https:\/\///')
                   patchdns=$(curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records/${dns_record_id}" \
                     -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
@@ -136,14 +136,13 @@ runs:
                   patch_dns_record_id=$(echo $patchdns | jq -r '.result.id')
                   
                   if [ -n "$patch_dns_record_id" ]; then
-                    echo "Cloudflare dns record is updated"
+                    echo "DNS record is updated, dns record id $patch_dns_record_id"
                   fi
                 fi
               fi
             fi
 
             echo "=============================================================================="
-            echo ""
           done
           rm public_suffix_list.dat
         fi
