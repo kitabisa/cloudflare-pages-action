@@ -114,7 +114,7 @@ runs:
                     custom_domain_id=$(echo $postcustomdomain | jq -r '.result.id')
 
                     if [ -n "$custom_domain_id" ]; then
-                      echo "Custom domain $domain is created
+                      echo "Custom domain $domain is created"
                     fi
                   fi
                 fi
