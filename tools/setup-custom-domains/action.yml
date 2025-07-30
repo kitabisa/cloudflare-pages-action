@@ -87,7 +87,7 @@ runs:
                   -H "Content-Type: application/json")
                 dns_record_id=$(echo $getdns | jq -r '.result[0].id')
 
-                if [ -n "$dns_record_id" ]; then
+                if [ -n "$dns_record_id" ] && [ "$dns_record_id" != "null" ]; then
                   echo "Cloudflare dns record for $domain already exists"
                 else
                   echo "Cloudflare dns record for $domain is not found"
