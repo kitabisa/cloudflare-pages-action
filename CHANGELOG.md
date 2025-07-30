@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.5](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.4...v2.0.5) (2025-07-30)
+
+
+### Bug Fixes
+
+* missing quote ([0d08b6c](https://github.com/kitabisa/cloudflare-pages-action/commit/0d08b6cd22b090a25a4025c3c0c3f2b53285056c))
+
 ## [2.0.4](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.3...v2.0.4) (2025-07-30)
 
 
