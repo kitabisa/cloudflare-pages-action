@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.2...v2.0.3) (2025-07-30)
+
+
+### Bug Fixes
+
+* the logic when dns_record_id equals null ([#19](https://github.com/kitabisa/cloudflare-pages-action/issues/19)) ([9fa4f7c](https://github.com/kitabisa/cloudflare-pages-action/commit/9fa4f7cbbf8d9ddeef63b6258042b713646deb3a))
+
 ## [2.0.2](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.1...v2.0.2) (2025-01-23)
 
 
