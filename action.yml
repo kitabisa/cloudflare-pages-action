@@ -103,11 +103,13 @@ runs:
           echo "pages-url=$PAGES_URL" >> $GITHUB_OUTPUT
           echo "deployment-url=$CUSTOM_DOMAIN_URL" >> $GITHUB_OUTPUT
           echo "Your deployment has been successful"
-          echo "and can be accessed at $PAGES_URL"
-          echo "or you can also access it at\n$CUSTOM_DOMAIN_URL"
+          echo "and can be accessed at:"
+          echo "$PAGES_URL"
+          echo "$CUSTOM_DOMAIN_URL"
         else
           echo "pages-url=$PAGES_URL" >> $GITHUB_OUTPUT
           echo "deployment-url=$PAGES_URL" >> $GITHUB_OUTPUT
           echo "Your deployment has been successful"
-          echo "and can be accessed at $PAGES_URL"
+          echo "and can be accessed at:"
+          echo "$PAGES_URL"
         fi
