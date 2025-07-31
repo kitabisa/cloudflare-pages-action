@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.6](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.5...v2.0.6) (2025-07-31)
+
+
+### Bug Fixes
+
+* condition for output deployment url ([3a260a0](https://github.com/kitabisa/cloudflare-pages-action/commit/3a260a02642858003fa22e118cf1baf99e2016be))
+
 ## [2.0.5](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.4...v2.0.5) (2025-07-30)
 
 
