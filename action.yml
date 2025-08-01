@@ -96,16 +96,15 @@ runs:
         PAGES_URL: ${{ steps.deploy.outputs.deployment-url }}
       run: |
         if [ -n "${{ inputs.custom-domains }}" ]; then
-          CUSTOM_DOMAIN_URL=$(echo "${{ inputs.custom-domains }}" | tr ',' '\n' | xargs -I {} echo "https://{}")
-        fi
-
-        if [ -n "$CUSTOM_DOMAIN_URL" ]; then
+          CUSTOM_DOMAIN_URLS=$(echo "${{ inputs.custom-domains }}" | tr ',' '\n' | xargs -I {} echo "https://{}")
           echo "pages-url=$PAGES_URL" >> $GITHUB_OUTPUT
-          echo "deployment-url=$CUSTOM_DOMAIN_URL" >> $GITHUB_OUTPUT
+          echo 'deployment-url<<EOF' >> $GITHUB_OUTPUT
+          echo $CUSTOM_DOMAIN_URLS >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
           echo "Your deployment has been successful"
           echo "and can be accessed at:"
           echo "$PAGES_URL"
-          echo "$CUSTOM_DOMAIN_URL"
+          echo "$CUSTOM_DOMAIN_URLS"
         else
           echo "pages-url=$PAGES_URL" >> $GITHUB_OUTPUT
           echo "deployment-url=$PAGES_URL" >> $GITHUB_OUTPUT
