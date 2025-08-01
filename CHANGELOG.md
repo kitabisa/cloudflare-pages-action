@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.8](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.7...v2.0.8) (2025-08-01)
+
+
+### Bug Fixes
+
+* output multiline custom domain ([46645f7](https://github.com/kitabisa/cloudflare-pages-action/commit/46645f77ace52090e59ef0d235b23a957ec2dd5e))
+
 ## [2.0.7](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.6...v2.0.7) (2025-07-31)
 
 
