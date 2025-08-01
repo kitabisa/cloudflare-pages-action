@@ -99,7 +99,7 @@ runs:
           CUSTOM_DOMAIN_URLS=$(echo "${{ inputs.custom-domains }}" | tr ',' '\n' | xargs -I {} echo "https://{}")
           echo "pages-url=$PAGES_URL" >> $GITHUB_OUTPUT
           echo 'deployment-url<<EOF' >> $GITHUB_OUTPUT
-          echo $CUSTOM_DOMAIN_URLS >> $GITHUB_OUTPUT
+          echo "$CUSTOM_DOMAIN_URLS" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
           echo "Your deployment has been successful"
           echo "and can be accessed at:"
