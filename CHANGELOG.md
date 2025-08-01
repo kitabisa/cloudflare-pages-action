@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.9](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.8...v2.0.9) (2025-08-01)
+
+
+### Bug Fixes
+
+* unquoted custom urls ([a73f98c](https://github.com/kitabisa/cloudflare-pages-action/commit/a73f98c670137120134efb4378ad1ede1031380c))
+
 ## [2.0.8](https://github.com/kitabisa/cloudflare-pages-action/compare/v2.0.7...v2.0.8) (2025-08-01)
 
 
