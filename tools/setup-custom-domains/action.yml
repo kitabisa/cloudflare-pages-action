@@ -102,6 +102,7 @@ runs:
                       "ttl": 1,
                       "proxied": true
                     }')
+                  echo "Cloudflare API Response (POST DNS): $postdns"
                   dns_record_id=$(echo $postdns | jq -r '.result.id')
 
                   if [ -n "$dns_record_id" ] && [ "$dns_record_id" != "null" ]; then
@@ -111,6 +112,7 @@ runs:
                       -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
                       -H "Content-Type: application/json" \
                       --data '{"name": "'${domain}'"}')
+                    echo "Cloudflare API Response (POST custom domain): $postcustomdomain"
                     custom_domain_id=$(echo $postcustomdomain | jq -r '.result.id')
 
                     if [ -n "$custom_domain_id" ]; then
