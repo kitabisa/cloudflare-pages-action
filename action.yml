@@ -68,7 +68,7 @@ runs:
   steps:
     - name: Deploy
       id: deploy
-      uses: cloudflare/wrangler-action@v3
+      uses: cloudflare/wrangler-action@v4
       with:
         workingDirectory: ${{ inputs.working-directory }}
         apiToken: ${{ inputs.api-token }}
