@@ -17,7 +17,7 @@ jobs:
 
       - name: Checkout repository
         if: ${{ steps.release.outputs.release_created }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Create tag major version
         if: ${{ steps.release.outputs.release_created }}
